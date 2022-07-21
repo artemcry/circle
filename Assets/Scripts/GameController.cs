@@ -15,12 +15,13 @@ public class GameController : MonoBehaviour
     private List<Texture2D> circleTexturesNext;
     private Coroutine generateCircles;
     private float circleCount;
+    private static Camera cam;
 
     public List<Circle> circles { get; set; }
     public List<Sprite> backgrounds { get; set; }
     public int scoreForNextLevel { get; private set; }
-    public static float screenWidth { get; private set; }
-    public static float screenHeight { get; private set; }
+    public static float screenWidth { get { return screenHeight * Camera.main.aspect; } }
+    public static float screenHeight { get { return Camera.main.orthographicSize * 2.0f; } }
 
     private int score;
     public int Score
@@ -29,9 +30,9 @@ public class GameController : MonoBehaviour
         set
         {
             score = value;
+            ui.UpdateScore();
             if (score >= scoreForNextLevel)
                 NextLevel();
-            ui.UpdateScore();
         }
     }
     public int level { get; private set; }
@@ -40,8 +41,8 @@ public class GameController : MonoBehaviour
 
     private void Awake()
     {
-        UpdateScreenSize();
         backgrounds = new List<Sprite>();
+        cam = Camera.main;
     }
     void Start()
     {
@@ -113,17 +114,17 @@ public class GameController : MonoBehaviour
     private IEnumerator GenerateCircle()
     {
         while (true)
-        { 
+        {
             System.Random rnd = new System.Random();
             float r, x, y;
-            r = rnd.Next((int)Circle.minRadius, (int)Circle.maxRadius) + rnd.Next(10)/10.0f ;
+            r = rnd.Next((int)Circle.minRadius, (int)Circle.maxRadius) + rnd.Next(10) / 10.0f;
             x = r + rnd.Next(1, (int)(screenWidth - r - 1));
             y = -r;
-            
+
             Circle c = Instantiate(circle).GetComponent<Circle>();
             c.radius = r;
-            c.speed = speedFactor * (8 / r);    // some speed gradation
-            c.score = (int)(1 / r * 5 + 3);     // some score gradation
+            c.speed = getSpeedByRadius(r);   
+            c.score = getScoreByRadius(r);
             c.screenPosition = new Vector2(x, y);
 
             var i = (r - Circle.minRadius) / (Circle.maxRadius - Circle.minRadius) * (circleTextures.Count - 1);
@@ -133,23 +134,21 @@ public class GameController : MonoBehaviour
             yield return new WaitForSeconds(1 / circleCount);
         }
     }
-
+    private float getSpeedByRadius(float r)
+    {
+        return speedFactor * (8 / r);
+    }
+    private int getScoreByRadius(float r)
+    {
+        return (int)(1 / r * 5 + 3);
+    }
     public static Vector3 ScreenToGlobalPos(Vector3 v)
     {
-        var cam = Camera.main;
         return new Vector3(v.x - screenWidth / 2 + cam.transform.position.x, -v.y + cam.orthographicSize + cam.transform.position.y, v.z);
     }
     public static Vector3 GlobalToScreenPos(Vector3 v)
     {
-        var cam = Camera.main;
         return new Vector3(v.x + screenWidth / 2 - cam.transform.position.x, v.y - cam.orthographicSize - cam.transform.position.y, v.z);
-    }
-
-    void UpdateScreenSize()
-    {
-        var cam = Camera.main;
-        screenHeight = cam.orthographicSize * 2.0f;
-        screenWidth = screenHeight * cam.aspect;
     }
     void Update()
     {
@@ -166,6 +165,6 @@ public class GameController : MonoBehaviour
             RaycastHit2D? hit = Physics2D.Raycast(pos, Vector2.zero);
             Circle circle = hit?.collider?.GetComponentInParent<Circle>();
             circle?.OnClick();
-        }       
+        }
     }
 }
