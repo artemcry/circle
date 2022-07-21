@@ -458,7 +458,7 @@ MonoBehaviour:
   btn_Start: {fileID: 291175612}
   btn_Stop: {fileID: 1039247355}
   nextLevel: {fileID: 650755257}
-  background: {fileID: 1517445426}
+  background: {fileID: 1517445427}
 --- !u!1 &344337977
 GameObject:
   m_ObjectHideFlags: 0
