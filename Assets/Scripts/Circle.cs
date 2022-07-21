@@ -5,7 +5,7 @@ public class Circle : MonoBehaviour
     private GameController gameController;
     private Material material;
     public static float minRadius { get; private set; } = 1.0f;
-    public static float maxRadius { get; private set; } = 5.0f;
+    public static float maxRadius { get; private set; } = 3.0f;
     public static float globalScale { get; set; } = 0.035f;
     public int score { get; set; }
     public float speed { get; set; }
